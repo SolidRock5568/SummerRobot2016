@@ -1,4 +1,5 @@
 #include "WPILib.h"
+#include "AHRS.h"
 
 class Robot: public IterativeRobot
 {
@@ -41,6 +42,7 @@ private:
 	// Start Define Sensor Types
 	Encoder rightEncoder;
 	Encoder leftEncoder;
+	AHRS *DriveGyro;
 	// End Define Sensor Types
 
 	// Start Define Sensor Ports
@@ -48,7 +50,7 @@ private:
 	const int RightEncoderPort2 = 1;
 	const int LeftEncoderPort1 = 2;
 	const int LeftEncoderPort2 = 3;
-	const std::string GyroPort =  ""; // Replace with Gyro Port
+	const std::string GyroPort = "SPI::Port::kMXP" ;
 	const int DownArmLimitSwitchPort = 5;
 	const int UpArmLimitSwitchPort = 6;
 	// End Define Sensor Ports
@@ -69,7 +71,12 @@ public:
 		 rightEncoder(RightEncoderPort1, RightEncoderPort2, false, Encoder::k4X),
 		 leftEncoder(LeftEncoderPort1, LeftEncoderPort2, false, Encoder::k4X)
 
+
+
+
 {
+		DriveGyro = new AHRS(SPI::Port::kMXP);
+
 		rightEncoder.SetSamplesToAverage(5);
 		rightEncoder.SetDistancePerPulse(1.0 / 360.0 * 2.0 * 3.1415 * 1.5);
 		rightEncoder.SetMinRate(1.0);

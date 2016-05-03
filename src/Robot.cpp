@@ -42,7 +42,10 @@ private:
 	// Start Define Sensor Types
 	Encoder rightEncoder;
 	Encoder leftEncoder;
+	DigitalInput UpSwitch;
+	DigitalInput DownSwitch;
 	AHRS *DriveGyro;
+	AnalogInput UltraSonicFrontRight;
 	// End Define Sensor Types
 
 	// Start Define Sensor Ports
@@ -53,6 +56,7 @@ private:
 	const std::string GyroPort = "SPI::Port::kMXP" ;
 	const int DownArmLimitSwitchPort = 5;
 	const int UpArmLimitSwitchPort = 6;
+	const int UltraSonicFrontRightPort = 7;
 	// End Define Sensor Ports
 public:
 	Robot() :
@@ -69,7 +73,11 @@ public:
 
 
 		 rightEncoder(RightEncoderPort1, RightEncoderPort2, false, Encoder::k4X),
-		 leftEncoder(LeftEncoderPort1, LeftEncoderPort2, false, Encoder::k4X)
+		 leftEncoder(LeftEncoderPort1, LeftEncoderPort2, false, Encoder::k4X),
+		 UpSwitch(UpArmLimitSwitchPort),
+		 DownSwitch(DownArmLimitSwitchPort),
+		 UltraSonicFrontRight(UltraSonicFrontRightPort)
+
 
 
 

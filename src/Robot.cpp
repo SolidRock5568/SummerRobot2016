@@ -13,6 +13,25 @@ private:
 	const std::string autoNameCustom = "Test Auto Selector";
 	std::string autoSelected;
 
+	// Start Define Auto Var
+	int time;
+	double rightSpeed;
+	double leftSpeed;
+	double targetDistance;
+	double currentDistance;
+	double startDistance;
+	int currentHeading;
+	int targetHeading;
+	double distancePerSecond;
+	double howFarOffCourse;
+	double timeOffCourse;
+	bool slowStop;
+	bool slowStart;
+	bool reachedTarget;
+	bool areOffCourse;
+	bool areObjects;
+	// End Define Auto Var
+
 	// Start Define User Input
 	Joystick mainJoystick;
 	// End Define User Input
@@ -65,7 +84,15 @@ private:
 	const int UltraSonicFrontRightPort = 7;
 	// End Define Sensor Ports
 public:
+
+	//Methods needed for SmartGyro/Encoder distance Forward
+		//Off course Check
+		//Distance Check
+		// Slow Speed-up/Slow-Down
+
 	Robot() :
+
+
 
 		 mainJoystick(MainJoystickPort),
 
@@ -103,6 +130,23 @@ public:
 		leftEncoder.SetSamplesToAverage(5);
 		leftEncoder.SetDistancePerPulse(1.0 / 360.0 * 2.0 * 3.1415 * 1.5);
 		leftEncoder.SetMinRate(1.0);
+
+		 time = 0;
+		 rightSpeed = 0.0;
+		 leftSpeed = 0.0;
+		 targetDistance = 0.0;
+		 currentDistance = 0.0;
+		 startDistance = 0.0;
+		 currentHeading = 0;
+		 targetHeading = 0;
+		 distancePerSecond = 0.0;
+		 howFarOffCourse = 0.0;
+		 timeOffCourse = 0.0;
+		 slowStop = false;
+		 slowStart = false;
+		 reachedTarget = false;
+		 areOffCourse = false;
+		 areObjects = false;
 
 				// Defines the number of samples to average when determining the rate.
 				// On a quadrature encoder, values range from 1-255; larger values

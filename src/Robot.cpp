@@ -1,5 +1,15 @@
 #include "WPILib.h"
 #include "AHRS.h"
+#include "FPS.cpp"
+
+#define A_BUTTON 1
+#define B_BUTTON 2
+#define X_BUTTON 3
+#define Y_BUTTON 4
+#define L_BUMPER 5
+#define R_BUMPER 6
+#define SELECT_BUTTON 7
+#define START_BUTTON 8
 
 class Robot: public IterativeRobot
 {
@@ -14,6 +24,7 @@ private:
 	std::string autoSelected;
 
 	// Start Define Auto Var
+
 	int time;
 	double rightSpeed;
 	double leftSpeed;
@@ -30,6 +41,7 @@ private:
 	bool reachedTarget;
 	bool areOffCourse;
 	bool areObjects;
+
 	// End Define Auto Var
 
 	// Start Define User Input
@@ -69,8 +81,9 @@ private:
 	Encoder leftEncoder;
 	DigitalInput UpSwitch;
 	DigitalInput DownSwitch;
-	AHRS *DriveGyro;
+	AHRS *driveGyro;
 	AnalogInput UltraSonicFrontRight;
+	FPS field[320][649];
 	// End Define Sensor Types
 
 	// Start Define Sensor Ports
@@ -89,9 +102,110 @@ public:
 		//Off course Check
 		//Distance Check
 		// Slow Speed-up/Slow-Down
+	float squareDrive(float val) {
+		if(val > 0.05) {
+			val = val*val;
+			return val;
+		}
+		else if(val < -0.05) {
+			val = -(val*val);
+			return val;
+		}
+		else {
+			return 0;
+		}
+	}
+
+	void basicTurn(int targetAngle)
+	{
+		targetHeading = targetAngle;
+		currentHeading = driveGyro->GetAngle();
+		if (targetHeading > currentHeading)
+		{
+			while(targetHeading > currentHeading)
+			{
+				leftWheel.Set(-leftSpeed);
+				rightWheel.Set(-rightSpeed);
+			}
+		}
+		else if (targetHeading < currentHeading)
+					{
+						while(targetHeading < currentHeading)
+						{
+							leftWheel.Set(leftSpeed);
+							rightWheel.Set(rightSpeed);
+						}
+		}
+
+	}
+
+	void basicEncoder(int distance)
+	{
+		startDistance = leftEncoder.GetDistance();
+		targetDistance = startDistance + distance;
+
+		for (currentDistance = startDistance; currentDistance >= targetDistance; currentDistance = leftEncoder.GetDistance())
+		{
+			rightWheel.Set(rightSpeed);
+			leftWheel.Set(-leftSpeed);
+		}
+		rightWheel.Set(0);
+		leftWheel.Set(0);
+	}
+	bool offCourseCheck()
+	{
+		currentHeading = driveGyro->GetAngle();
+
+		return !(targetHeading - 1 < currentHeading && currentHeading > targetHeading + 1);
+	}
+	void trackOffCourse()
+	{
+		if(offCourseCheck())
+		{
+			time++;
+			howFarOffCourse = howFarOffCourse + distancePerSecond;
+		}
+		else
+		{
+			areOffCourse = false;
+			targetDistance = targetDistance + howFarOffCourse;
+
+		}
+
+	}
+
+	void correctOffCourse()
+	{
+		if (currentHeading > targetHeading + 10 || currentHeading < targetHeading - 10)
+		{
+			if (currentHeading > targetHeading)
+			{
+				leftSpeed = leftSpeed + .3;
+				rightSpeed = rightSpeed - .1;
+			}
+			else
+			{
+				leftSpeed = leftSpeed - .1;
+				rightSpeed = rightSpeed + .3;
+			}
+
+		}
+		else
+		{
+			if (currentHeading > targetHeading)
+			{
+				leftSpeed = leftSpeed + .1;
+
+			}
+			else
+			{
+
+				rightSpeed = rightSpeed + .1;
+			}
+		}
+	}
 
 	Robot() :
-
 
 
 		 mainJoystick(MainJoystickPort),
@@ -114,9 +228,10 @@ public:
 
 
 
-
 {
-		DriveGyro = new AHRS(SPI::Port::kMXP);
+
+
+		driveGyro = new AHRS(SPI::Port::kMXP);
 
 		frame = imaqCreateImage(IMAQ_IMAGE_RGB, 0);
 		camera.reset(new AxisCamera("axis-camera.local"));
@@ -130,6 +245,16 @@ public:
 		leftEncoder.SetSamplesToAverage(5);
 		leftEncoder.SetDistancePerPulse(1.0 / 360.0 * 2.0 * 3.1415 * 1.5);
 		leftEncoder.SetMinRate(1.0);
+
+
+		for(int r = 0; r < 321; r++)
+			{
+				for(int c = 0; c< 650; c++)
+				{
+				field[r][c] = FPS(r,c);
+				}
+			}
+
 
 		 time = 0;
 		 rightSpeed = 0.0;
@@ -147,6 +272,7 @@ public:
 		 reachedTarget = false;
 		 areOffCourse = false;
 		 areObjects = false;
+
 
 				// Defines the number of samples to average when determining the rate.
 				// On a quadrature encoder, values range from 1-255; larger values
@@ -218,6 +344,88 @@ public:
 
 	void TeleopPeriodic()
 	{
+		// acquire images
+				IMAQdxStartAcquisition(session);
+
+				// grab an image, draw the circle, and provide it for the camera server which will
+				// in turn send it to the dashboard.
+				while(IsOperatorControl() && IsEnabled()) {
+					IMAQdxGrab(session, frame, true, NULL);
+					if(imaqError != IMAQdxErrorSuccess) {
+							DriverStation::ReportError("IMAQdxGrab error: " + std::to_string((long)imaqError) + "\n");
+					} else {
+							imaqDrawShapeOnImage(frame, frame, { 190, 250, 100, 100 }, DrawMode::IMAQ_DRAW_VALUE, ShapeMode::IMAQ_SHAPE_RECT, 0.0f);
+							//				 Shape parameters: {x-axis, y axis, length, width}
+							CameraServer::GetInstance()->SetImage(frame);
+					}
+
+				//Scheduler::GetInstance().Run();
+				if(mainJoystick.GetRawAxis(3) > 0 )
+							{
+								leftShoot.Set(1);
+								rightShoot.Set(-1);
+							}
+							else if(mainJoystick.GetRawAxis(2) > 0 )
+							{
+								leftShoot.Set(-0.4);
+								rightShoot.Set(0.4);
+
+							}
+							else
+							{
+								leftShoot.Set(0);
+								rightShoot.Set(0);
+							}
+
+				if (mainJoystick.GetRawAxis(1) < -0.2)
+							{
+								float speed = mainJoystick.GetRawAxis(1) * mainJoystick.GetRawAxis(1);
+								//Raise(speed);
+							}
+							else if (mainJoystick.GetRawAxis(1) > 0.2)
+							{
+								float speed = mainJoystick.GetRawAxis(1) * mainJoystick.GetRawAxis(1);
+								//Lower(speed);
+							}
+							else
+							{
+								//Stop();
+							}
+
+				if(mainJoystick.GetRawButton(B_BUTTON) == true)
+							{
+								kicker.Set(1);
+								Wait(0.1);
+								kicker.Set(-0.5);
+								Wait(0.17);
+								kicker.Set(0);
+							}
+
+
+				float yIn = mainJoystick.GetRawAxis(5);
+				float xIn = mainJoystick.GetRawAxis(4);
+
+				if(mainJoystick.GetRawButton(R_BUMPER)){
+
+					rightWheel.Set((squareDrive(yIn) + squareDrive(xIn)));
+					leftWheel.Set((squareDrive(xIn) - squareDrive(yIn)));
+
+				}
+				else{
+
+					rightWheel.Set((squareDrive(yIn) + squareDrive(xIn)) / 2);
+					leftWheel.Set((squareDrive(xIn) - squareDrive(yIn)) / 2);
+
+				}
+				// wait for a motor update time
+				Wait(0.005);
+				}
+
+				// stop image acquisition
+				IMAQdxStopAcquisition(session);
+
+
+
 
 	}
 
@@ -228,3 +436,5 @@ public:
 };
 
 START_ROBOT_CLASS(Robot)
+
+

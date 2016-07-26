@@ -52,6 +52,27 @@ double GetAngleDifference(FPS temp)
 	int x2 = temp.GetCol(); //25
 	int y2 = temp.GetRow(); // 50
 
+	if (x1 == x2 && y1 > y2)
+	{
+		return 270;
+	}
+	else if (x1 == x2 && y1 < y2)
+		{
+			return 90;
+		}
+	else if (y1 == y2 && x1 < x2)
+			{
+				return 180;
+			}
+	else if (y1 == y2 && x1 < x2)
+				{
+					return 360;
+				}
+	else if (y1 == y2 && x1 == x2)
+	{
+		return 0;
+	}
+
 
 
 

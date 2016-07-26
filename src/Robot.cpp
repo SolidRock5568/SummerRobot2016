@@ -91,10 +91,33 @@ public:
 					return 0;
 				}
 			}
-		/*void advancedMove(int targetROW , int targetCOL)
+		void advancedMove(int targetROW , int targetCOL)
 		{
+			startDistance = leftEncoder.GetDistance();
+			currentDistance = leftEncoder.GetDistance();
+			targetDistance = Field[robotCurrentY][robotCurrentX].GetDistance(Field[targetROW][targetCOL]) * 190;
 
-		}*/
+			while( currentDistance + 20 < targetDistance)
+			{
+				rightWheel.Set( Field[robotCurrentY][robotCurrentX].GetSpeed());
+				leftWheel.Set( - (Field[robotCurrentY][robotCurrentX].GetSpeed()));
+				currentDistance = leftEncoder.GetDistance();
+
+				SmartDashboard::PutNumber("EncoderDistance" , leftEncoder.GetDistance());
+				SmartDashboard::PutNumber("EncoderTarget" , targetDistance);
+			}
+
+
+			rightWheel.Set(0);
+			leftWheel.Set(0);
+
+			robotCurrentX = targetCOL;
+			robotCurrentY = targetROW;
+
+
+
+
+		}
 
 		void advancedTurn (int targetROW , int targetCOL)
 		{
@@ -105,7 +128,16 @@ public:
 			leftSpeed = Field[robotCurrentY][robotCurrentX].GetSpeed();
 			rightSpeed = Field[robotCurrentY][robotCurrentX].GetSpeed();
 
-			int z = currentHeading - 250;
+			if ( currentHeading - 3 < targetHeading && currentHeading + 3 > targetHeading)
+			{
+				return;
+			}
+			else if (targetHeading == 0)
+			{
+				return;
+			}
+
+			int z = currentHeading - 225;
 			int m = 450 + z;
 			bool max = 1;
 			if (targetHeading<currentHeading and targetHeading>z)
@@ -126,9 +158,14 @@ public:
 												{
 													targetHeading = targetHeading + robotBaseHeading;
 												}
+				else if ( (targetHeading - 360 < currentHeading + 5 && targetHeading - 360 > currentHeading - 5) || (targetHeading + 360 < currentHeading + 5 && targetHeading + 360 > currentHeading - 5))
+												{
+													return;
+												}
 
-
-														while(targetHeading != currentHeading)
+				else
+				{
+														while((2 + currentHeading > targetHeading && targetHeading > currentHeading - 2) == false)
 														{
 															leftWheel.Set(leftSpeed);
 															rightWheel.Set(rightSpeed);
@@ -138,7 +175,7 @@ public:
 															SmartDashboard::PutNumber("currentHeading", currentHeading);
 														}
 										}
-
+													}
 			else if (max ==  0)
 							{
 				//LEFT
@@ -152,10 +189,16 @@ public:
 
 								}
 
-								if(targetHeading <= robotBaseHeading)
+
+								 if(targetHeading <= robotBaseHeading)
 								{
 									targetHeading = targetHeading + robotBaseHeading;
 								}
+
+								 else if ( (targetHeading - 360 < currentHeading + 5 && targetHeading - 360 > currentHeading - 5) || (targetHeading + 360 < currentHeading + 5 && targetHeading + 360 > currentHeading - 5))
+																{
+																	return;
+																}
 
 								while( (2 + currentHeading > targetHeading && targetHeading > currentHeading - 2) == false)
 													{
@@ -250,9 +293,9 @@ public:
 
 
 
-				/*leftEncoder.SetSamplesToAverage(5);
+				leftEncoder.SetSamplesToAverage(5);
 				leftEncoder.SetDistancePerPulse(1.0 / 360.0 * 2.0 * 3.1415 * 3.0);
-				leftEncoder.SetMinRate(1.0);*/
+				leftEncoder.SetMinRate(1.0);
 
 
 
@@ -312,7 +355,7 @@ public:
 						 {
 							 for (int tempX = 0; tempX <= 10; tempX++)
 							 {
-								 Field[tempY][tempX] = FPS(tempY , tempX , .43);
+								 Field[tempY][tempX] = FPS(tempY , tempX , .55);
 						}
 						 }
 
@@ -321,6 +364,8 @@ public:
 
 	void TeleopPeriodic()
 		{
+
+		SmartDashboard::PutNumber("Encoder Pulses", leftEncoder.GetDistance());
 
 
 
@@ -332,6 +377,8 @@ public:
 
 			SmartDashboard::PutNumber("Angle Returned" ,Field[robotCurrentY][robotCurrentX].GetDistance(Field[TestY][TestX]) );
 			advancedTurn(TestY , TestX);
+			Wait(1);
+			//advancedMove(TestY , TestX);
 
 
 

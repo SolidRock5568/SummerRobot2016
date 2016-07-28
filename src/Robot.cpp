@@ -128,6 +128,11 @@ public:
 			leftSpeed = Field[robotCurrentY][robotCurrentX].GetSpeed();
 			rightSpeed = Field[robotCurrentY][robotCurrentX].GetSpeed();
 
+			if(targetHeading <= robotBaseHeading && targetHeading > 0)
+			{
+				targetHeading = targetHeading + 360;
+			}
+
 			if ( currentHeading - 3 < targetHeading && currentHeading + 3 > targetHeading)
 			{
 				return;
@@ -154,32 +159,32 @@ public:
 			}
 			if (max == 1)
 													{
-				if(targetHeading <= robotBaseHeading)
+				/*if(targetHeading <= robotBaseHeading)
 												{
 													targetHeading = targetHeading + robotBaseHeading;
 												}
-				else if ( (targetHeading - 360 < currentHeading + 5 && targetHeading - 360 > currentHeading - 5) || (targetHeading + 360 < currentHeading + 5 && targetHeading + 360 > currentHeading - 5))
+				 if ( (targetHeading - 360 < currentHeading + 5 && targetHeading - 360 > currentHeading - 5) || (targetHeading + 360 < currentHeading + 5 && targetHeading + 360 > currentHeading - 5))
 												{
 													return;
-												}
+												}*/
 
-				else
-				{
+
+
 														while((2 + currentHeading > targetHeading && targetHeading > currentHeading - 2) == false)
 														{
 															leftWheel.Set(leftSpeed);
 															rightWheel.Set(rightSpeed);
-															currentHeading = driveGyro->GetAngle();
-															currentHeading = currentHeading + robotBaseHeading;
+															//currentHeading = driveGyro->GetAngle();
+															currentHeading = driveGyro->GetAngle() + robotBaseHeading;
 															SmartDashboard::PutNumber("TargetHeading" , targetHeading);
 															SmartDashboard::PutNumber("currentHeading", currentHeading);
 														}
-										}
+
 													}
 			else if (max ==  0)
 							{
 				//LEFT
-								targetHeading = targetHeading + 360;
+								/*targetHeading = targetHeading + 360;
 
 								if (targetHeading >= 360 + robotBaseHeading)
 								{
@@ -195,18 +200,18 @@ public:
 									targetHeading = targetHeading + robotBaseHeading;
 								}
 
-								 else if ( (targetHeading - 360 < currentHeading + 5 && targetHeading - 360 > currentHeading - 5) || (targetHeading + 360 < currentHeading + 5 && targetHeading + 360 > currentHeading - 5))
+								 if ( (targetHeading - 360 < currentHeading + 5 && targetHeading - 360 > currentHeading - 5) || (targetHeading + 360 < currentHeading + 5 && targetHeading + 360 > currentHeading - 5))
 																{
 																	return;
-																}
+																}*/
 
 								while( (2 + currentHeading > targetHeading && targetHeading > currentHeading - 2) == false)
 													{
 
 														leftWheel.Set(-leftSpeed);
 														rightWheel.Set(-rightSpeed);
-														currentHeading = driveGyro->GetAngle();
-														currentHeading = currentHeading + robotBaseHeading;
+														//currentHeading = driveGyro->GetAngle();
+														currentHeading = driveGyro->GetAngle() + robotBaseHeading;
 
 														SmartDashboard::PutNumber("TargetHeading" , targetHeading);
 														SmartDashboard::PutNumber("currentHeading", currentHeading);

@@ -93,19 +93,108 @@ public:
 			}
 		void advancedMove(int targetROW , int targetCOL)
 		{
+			if ( targetROW == robotCurrentY && targetCOL == robotCurrentX)
+			{
+				return;
+			}
+			rightSpeed = 0;
+			leftSpeed = 0;
+
+			leftEncoder.Reset();
 			startDistance = leftEncoder.GetDistance();
 			currentDistance = leftEncoder.GetDistance();
 			targetDistance = Field[robotCurrentY][robotCurrentX].GetDistance(Field[targetROW][targetCOL]) * 190;
 
-			while( currentDistance + 20 < targetDistance)
+			currentHeading = driveGyro->GetAngle() + robotBaseHeading;
+			targetHeading = Field[robotCurrentY][robotCurrentX].GetAngleDifference(Field[targetROW][targetCOL]);
+
+			if(targetHeading < robotBaseHeading && targetHeading > 0)
+						{
+							targetHeading = targetHeading + 360;
+						}
+
+
+			while( currentDistance + 40 < targetDistance)
 			{
-				rightWheel.Set( Field[robotCurrentY][robotCurrentX].GetSpeed());
-				leftWheel.Set( - (Field[robotCurrentY][robotCurrentX].GetSpeed()));
+				if (targetHeading > currentHeading + 2)
+				{
+					rightSpeed = .2;
+				}
+
+				else if (targetHeading > currentHeading + 1)
+				{
+					rightSpeed = .1;
+				}
+				else
+				{
+					rightSpeed = 0;
+				}
+
+				if (targetHeading < currentHeading - 2)
+				{
+					leftSpeed = .2;
+				}
+
+				else if (targetHeading < currentHeading - 1)
+				{
+					leftSpeed = .1;
+				}
+
+				else
+				{
+					leftSpeed = 0;
+				}
+
+				rightWheel.Set( Field[robotCurrentY][robotCurrentX].GetSpeed() - .3 + rightSpeed);
+				leftWheel.Set( - ((Field[robotCurrentY][robotCurrentX].GetSpeed())-.3 + leftSpeed));
 				currentDistance = leftEncoder.GetDistance();
 
-				SmartDashboard::PutNumber("EncoderDistance" , leftEncoder.GetDistance());
+				SmartDashboard::PutNumber("EncoderDistance" , leftEncoder.GetDistance() - .2);
 				SmartDashboard::PutNumber("EncoderTarget" , targetDistance);
 			}
+			rightWheel.Set(0);
+			leftWheel.Set(0);
+			Wait(.5);
+			currentDistance = leftEncoder.GetDistance();
+
+			while( currentDistance > targetDistance + 30)
+						{
+				if (targetHeading > currentHeading + 2)
+								{
+									leftSpeed = .2;
+								}
+
+								else if (targetHeading > currentHeading + 1)
+								{
+									leftSpeed = .1;
+								}
+								else
+								{
+									leftSpeed = 0;
+								}
+
+								if (targetHeading < currentHeading - 2)
+								{
+									rightSpeed = .2;
+								}
+
+								else if (targetHeading < currentHeading - 1)
+								{
+									rightSpeed = .1;
+								}
+
+								else
+								{
+									rightSpeed = 0;
+								}
+
+							rightWheel.Set( -  (Field[robotCurrentY][robotCurrentX].GetSpeed() - .35 + rightSpeed));
+							leftWheel.Set(  (Field[robotCurrentY][robotCurrentX].GetSpeed()) - .35 + leftSpeed);
+							currentDistance = leftEncoder.GetDistance();
+
+							SmartDashboard::PutNumber("EncoderDistance" , leftEncoder.GetDistance());
+							SmartDashboard::PutNumber("EncoderTarget" , targetDistance);
+						}
 
 
 			rightWheel.Set(0);
@@ -125,22 +214,24 @@ public:
 			targetHeading = Field[robotCurrentY][robotCurrentX].GetAngleDifference(Field[targetROW][targetCOL]);
 			SmartDashboard::PutNumber("TargetHeading" , targetHeading);
 			SmartDashboard::PutNumber("currentHeading", currentHeading);
-			leftSpeed = Field[robotCurrentY][robotCurrentX].GetSpeed();
-			rightSpeed = Field[robotCurrentY][robotCurrentX].GetSpeed();
+			leftSpeed = Field[robotCurrentY][robotCurrentX].GetSpeed() - .15;
+			rightSpeed = Field[robotCurrentY][robotCurrentX].GetSpeed() - .15;
 
-			if(targetHeading <= robotBaseHeading && targetHeading > 0)
+			if(targetHeading < robotBaseHeading && targetHeading > 0)
 			{
 				targetHeading = targetHeading + 360;
 			}
 
-			if ( currentHeading - 3 < targetHeading && currentHeading + 3 > targetHeading)
+
+
+			if ( currentHeading - 2 < targetHeading && currentHeading + 2 > targetHeading)
 			{
 				return;
 			}
-			else if (targetHeading == 0)
-			{
-				return;
-			}
+				else if (targetHeading == 0 || targetHeading == robotBaseHeading + 360)
+				{
+					return;
+				}
 
 			int z = currentHeading - 225;
 			int m = 450 + z;
@@ -149,77 +240,97 @@ public:
 			{
 				max=0;
 			}
-			else if (targetHeading>currentHeading and targetHeading>m)
-			{
-				max=0;
-			}
-			else
-			{
-				max=1;
-			}
+				else if (targetHeading>currentHeading and targetHeading>m)
+				{
+					max=0;
+				}
+					else
+					{
+						max=1;
+					}
 			if (max == 1)
-													{
-				/*if(targetHeading <= robotBaseHeading)
-												{
-													targetHeading = targetHeading + robotBaseHeading;
-												}
-				 if ( (targetHeading - 360 < currentHeading + 5 && targetHeading - 360 > currentHeading - 5) || (targetHeading + 360 < currentHeading + 5 && targetHeading + 360 > currentHeading - 5))
-												{
-													return;
-												}*/
+			{
+						while((3 + currentHeading > targetHeading && targetHeading > currentHeading - 3) == false)
+						{
+								leftWheel.Set(leftSpeed);
+								rightWheel.Set(rightSpeed);
+								currentHeading = driveGyro->GetAngle() + robotBaseHeading;
+						    	SmartDashboard::PutNumber("TargetHeading" , targetHeading);
+								SmartDashboard::PutNumber("currentHeading", currentHeading);
+						}
 
-
-
-														while((2 + currentHeading > targetHeading && targetHeading > currentHeading - 2) == false)
-														{
-															leftWheel.Set(leftSpeed);
-															rightWheel.Set(rightSpeed);
-															//currentHeading = driveGyro->GetAngle();
-															currentHeading = driveGyro->GetAngle() + robotBaseHeading;
-															SmartDashboard::PutNumber("TargetHeading" , targetHeading);
-															SmartDashboard::PutNumber("currentHeading", currentHeading);
-														}
-
-													}
-			else if (max ==  0)
+			}
+					else if (max ==  0)
 							{
 				//LEFT
-								/*targetHeading = targetHeading + 360;
 
-								if (targetHeading >= 360 + robotBaseHeading)
-								{
-									targetHeading = Field[robotCurrentY][robotCurrentX].GetAngleDifference(Field[targetROW][targetCOL]);
-
-
-
-								}
-
-
-								 if(targetHeading <= robotBaseHeading)
-								{
-									targetHeading = targetHeading + robotBaseHeading;
-								}
-
-								 if ( (targetHeading - 360 < currentHeading + 5 && targetHeading - 360 > currentHeading - 5) || (targetHeading + 360 < currentHeading + 5 && targetHeading + 360 > currentHeading - 5))
-																{
-																	return;
-																}*/
-
-								while( (2 + currentHeading > targetHeading && targetHeading > currentHeading - 2) == false)
+									while( (3 + currentHeading > targetHeading && targetHeading > currentHeading - 3) == false)
 													{
-
-														leftWheel.Set(-leftSpeed);
-														rightWheel.Set(-rightSpeed);
-														//currentHeading = driveGyro->GetAngle();
-														currentHeading = driveGyro->GetAngle() + robotBaseHeading;
-
-														SmartDashboard::PutNumber("TargetHeading" , targetHeading);
-														SmartDashboard::PutNumber("currentHeading", currentHeading);
+												leftWheel.Set(-leftSpeed);
+												rightWheel.Set(-rightSpeed);
+												currentHeading = driveGyro->GetAngle() + robotBaseHeading;
+												SmartDashboard::PutNumber("TargetHeading" , targetHeading);
+												SmartDashboard::PutNumber("currentHeading", currentHeading);
 													}
 
 							}
 			leftWheel.Set(0);
 			rightWheel.Set(0);
+
+			if(targetHeading > currentHeading - 2 || targetHeading < currentHeading + 2)
+			{
+				 z = currentHeading - 225;
+				 m = 450 + z;
+				 max = 1;
+							if (targetHeading<currentHeading and targetHeading>z)
+							{
+								max=0;
+							}
+							else if (targetHeading>currentHeading and targetHeading>m)
+							{
+								max=0;
+							}
+							else
+							{
+								max=1;
+							}
+
+							if (max == 1)
+																				{
+
+
+
+
+																					while((1 + currentHeading > targetHeading && targetHeading > currentHeading - 1) == false)
+																					{
+																						leftWheel.Set(leftSpeed);
+																						rightWheel.Set(rightSpeed);
+																						//currentHeading = driveGyro->GetAngle();
+																						currentHeading = driveGyro->GetAngle() + robotBaseHeading;
+																						SmartDashboard::PutNumber("TargetHeading" , targetHeading);
+																						SmartDashboard::PutNumber("currentHeading", currentHeading);
+																					}
+
+																				}
+										else if (max ==  0)
+														{
+											//LEFT
+
+															while( (1 + currentHeading > targetHeading && targetHeading > currentHeading - 1) == false)
+																				{
+
+																					leftWheel.Set(-leftSpeed);
+																					rightWheel.Set(-rightSpeed);
+																					currentHeading = driveGyro->GetAngle() + robotBaseHeading;
+
+																					SmartDashboard::PutNumber("TargetHeading" , targetHeading);
+																					SmartDashboard::PutNumber("currentHeading", currentHeading);
+																				}
+														}
+							leftWheel.Set(0);
+							rightWheel.Set(0);
+
+			}
 		}
 		void basicTurn(int targetAngle, double speed)
 			{
@@ -382,8 +493,8 @@ public:
 
 			SmartDashboard::PutNumber("Angle Returned" ,Field[robotCurrentY][robotCurrentX].GetDistance(Field[TestY][TestX]) );
 			advancedTurn(TestY , TestX);
-			Wait(1);
-			//advancedMove(TestY , TestX);
+			Wait(2);
+			advancedMove(TestY , TestX);
 
 
 
@@ -391,7 +502,8 @@ public:
 
 				//basicTurn(Field[robotCurrentX][robotCurrentY].GetAngleDifference(Field[50][25]), .4);
 			}
-
+		SmartDashboard::PutNumber("CurrentDistance" , leftEncoder.GetDistance());
+		SmartDashboard::PutNumber("CurrentAngle" , driveGyro->GetAngle() + robotBaseHeading);
 		if(mainJoystick.GetRawButton(3))
 		{
 			TestY++;

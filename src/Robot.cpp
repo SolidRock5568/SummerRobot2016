@@ -114,16 +114,46 @@ public:
 						}
 
 
+
+
+
 			while( currentDistance + 40 < targetDistance)
 			{
-				if (targetHeading > currentHeading + 2)
+
+				currentHeading = driveGyro->GetAngle() + robotBaseHeading;
+
+				int z = currentHeading - 225;
+							int m = 450 + z;
+							bool max = 0;
+							if (targetHeading<currentHeading and targetHeading>z)
+							{
+								max=0;
+							}
+								else if (targetHeading>currentHeading and targetHeading>m)
+								{
+									max=0;
+								}
+									else
+									{
+										max=1;
+									}
+							if (max == 1)
+							{
+								leftSpeed = (targetHeading - currentHeading) * .1;
+							}
+							else if (max == 0)
+							{
+								rightSpeed = (currentHeading - targetHeading) * .1;
+							}
+
+				/*if (targetHeading > currentHeading + 2)
 				{
-					rightSpeed = .2;
+					rightSpeed = .3;
 				}
 
 				else if (targetHeading > currentHeading + 1)
 				{
-					rightSpeed = .1;
+					rightSpeed = .15;
 				}
 				else
 				{
@@ -132,24 +162,25 @@ public:
 
 				if (targetHeading < currentHeading - 2)
 				{
-					leftSpeed = .2;
+					leftSpeed = .3;
 				}
 
 				else if (targetHeading < currentHeading - 1)
 				{
-					leftSpeed = .1;
+					leftSpeed = .15;
 				}
 
 				else
 				{
 					leftSpeed = 0;
-				}
+				}*/
+
 
 				rightWheel.Set( Field[robotCurrentY][robotCurrentX].GetSpeed() - .3 + rightSpeed);
 				leftWheel.Set( - ((Field[robotCurrentY][robotCurrentX].GetSpeed())-.3 + leftSpeed));
 				currentDistance = leftEncoder.GetDistance();
-
-				SmartDashboard::PutNumber("EncoderDistance" , leftEncoder.GetDistance() - .2);
+				SmartDashboard::PutNumber( "TargetHeading",Field[robotCurrentY][robotCurrentX].GetAngleDifference(Field[targetROW][targetCOL]));
+				SmartDashboard::PutNumber("EncoderDistance" , leftEncoder.GetDistance());
 				SmartDashboard::PutNumber("EncoderTarget" , targetDistance);
 			}
 			rightWheel.Set(0);
@@ -159,14 +190,17 @@ public:
 
 			while( currentDistance > targetDistance + 30)
 						{
-				if (targetHeading > currentHeading + 2)
+
+				currentHeading = driveGyro->GetAngle() + robotBaseHeading;
+
+				/*if (targetHeading > currentHeading + 2)
 								{
-									leftSpeed = .2;
+									leftSpeed = .3;
 								}
 
 								else if (targetHeading > currentHeading + 1)
 								{
-									leftSpeed = .1;
+									leftSpeed = .15;
 								}
 								else
 								{
@@ -175,23 +209,46 @@ public:
 
 								if (targetHeading < currentHeading - 2)
 								{
-									rightSpeed = .2;
+									rightSpeed = .3;
 								}
 
 								else if (targetHeading < currentHeading - 1)
 								{
-									rightSpeed = .1;
+									rightSpeed = .15;
 								}
 
 								else
 								{
 									rightSpeed = 0;
-								}
+								}*/
+											int z = currentHeading - 225;
+											int m = 450 + z;
+											bool max = 0;
+											if (targetHeading<currentHeading and targetHeading>z)
+											{
+												max=0;
+											}
+												else if (targetHeading>currentHeading and targetHeading>m)
+												{
+													max=0;
+												}
+													else
+													{
+														max=1;
+													}
+											if (max == 1)
+											{
+												rightSpeed = (targetHeading - currentHeading) * .1;
+											}
+											else if (max == 0)
+											{
+												leftSpeed = (currentHeading - targetHeading) * .1;
+											}
 
 							rightWheel.Set( -  (Field[robotCurrentY][robotCurrentX].GetSpeed() - .35 + rightSpeed));
 							leftWheel.Set(  (Field[robotCurrentY][robotCurrentX].GetSpeed()) - .35 + leftSpeed);
 							currentDistance = leftEncoder.GetDistance();
-
+							SmartDashboard::PutNumber( "TargetHeading",Field[robotCurrentY][robotCurrentX].GetAngleDifference(Field[targetROW][targetCOL]));
 							SmartDashboard::PutNumber("EncoderDistance" , leftEncoder.GetDistance());
 							SmartDashboard::PutNumber("EncoderTarget" , targetDistance);
 						}
@@ -492,7 +549,7 @@ public:
 
 
 			SmartDashboard::PutNumber("Angle Returned" ,Field[robotCurrentY][robotCurrentX].GetDistance(Field[TestY][TestX]) );
-			advancedTurn(TestY , TestX);
+			//advancedTurn(TestY , TestX);
 			Wait(2);
 			advancedMove(TestY , TestX);
 

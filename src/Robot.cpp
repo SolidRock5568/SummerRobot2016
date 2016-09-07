@@ -13,6 +13,7 @@
 #define SELECT_BUTTON 7
 #define START_BUTTON 8
 
+
 class Robot: public IterativeRobot
 {
 
@@ -41,8 +42,10 @@ public:
 		bool reachedTarget;
 		bool areOffCourse;
 		bool areObjects;
+		int yServoPos;
+		int xServoPos;
 
-		FPS Field[11][11];
+		FPS Field[21][21];
 
 
 
@@ -50,6 +53,7 @@ public:
 
 
 		Joystick mainJoystick;
+		Joystick servoJoystick;
 
 
 
@@ -62,13 +66,17 @@ public:
 		Victor armLift;
 		Victor kicker;
 
+		Servo xServo;
+		Servo yServo;
 
 
 
-				/*IMAQdxSession session;
+				IMAQdxSession session;
+				IMAQdxSession USB;
 				Image *frame;
+
 				IMAQdxError imaqError;
-				std::unique_ptr<AxisCamera> camera;*/
+				std::unique_ptr<AxisCamera> camera;
 
 
 		Encoder leftEncoder;
@@ -77,6 +85,126 @@ public:
 
 		//FPS field[320][649];
 		// End Define Sensor Types
+
+		void servoSet()
+		{
+
+			if (servoJoystick.GetY() > .1 || servoJoystick.GetY() < -.15)
+						{
+							if (servoJoystick.GetY() < 0)
+							{
+
+								yServoPos = yServoPos - ((-servoJoystick.GetY() * servoJoystick.GetY()) * 3);
+							}
+
+							else if (servoJoystick.GetY() > 0)
+							{
+								yServoPos = yServoPos - ((servoJoystick.GetY() * servoJoystick.GetY()) * 3);
+							}
+						}
+
+			yServo.SetAngle(yServoPos);
+			if (servoJoystick.GetX() > .1 || servoJoystick.GetX() < -.15)
+									{
+										if (servoJoystick.GetX() < 0)
+										{
+
+											xServoPos = xServoPos - ((-servoJoystick.GetX() * servoJoystick.GetX()) * 3);
+										}
+
+										else if (servoJoystick.GetX() > 0)
+										{
+											xServoPos = xServoPos - ((servoJoystick.GetX() * servoJoystick.GetX()) * 3);
+										}
+									}
+
+						xServo.SetAngle(xServoPos);
+
+						if (yServo.GetAngle() >= 90)
+									{
+										yServoPos = 90;
+									}
+						if ( xServo.GetAngle() >= 179)
+							{
+							xServoPos = 179;
+
+									}
+
+
+
+
+									if (servoJoystick.GetRawButton(2))
+									{
+										yServoPos = yServo.GetAngle();
+										xServoPos = xServo.GetAngle();
+									}
+
+									else if (servoJoystick.GetRawButton(3))
+									{
+										xServoPos = 90;
+										yServoPos = 45;
+									}
+
+
+
+
+
+
+
+		}
+
+		void simpleScan()
+		{
+			int xPos = xServo.Get();
+			int yPos = yServo.Get();
+			bool xPostive = true;
+			bool yPostive = true;
+
+			while (servoJoystick.GetRawButton(1))
+			{
+
+
+				if (yPos >= 90)
+				{
+					yPostive = false;
+				}
+				else if (yPos <= 0)
+				{
+					yPostive = true;
+				}
+				if (xPos >= 180)
+				{
+					xPostive = false;
+				}
+				else if (xPos <= 0)
+				{
+					xPostive = true;
+				}
+
+				if (xPostive)
+				{
+					xPos++;
+					xServo.Set(xPos);
+				}
+				else
+				{
+					xPos--;
+					xServo.Set(xPos);
+				}
+				if (yPostive)
+								{
+									yPos++;
+									yServo.Set(yPos);
+								}
+								else
+								{
+									yPos--;
+									yServo.Set(yPos);
+								}
+				Wait(.05);
+
+			}
+		}
 
 		float squareDrive(float val) {
 				if(val > 0.05) {
@@ -139,49 +267,45 @@ public:
 									}
 							if (max == 1)
 							{
-								leftSpeed = (targetHeading - currentHeading) * .1;
+								rightSpeed = .3;
+								leftSpeed = 0;
 							}
 							else if (max == 0)
 							{
-								rightSpeed = (currentHeading - targetHeading) * .1;
+
+
+								if (targetHeading <  currentHeading - 2)
+												{
+													leftSpeed = .3;
+													rightSpeed = 0;
+												}
+
+												else if (targetHeading < currentHeading - 1)
+												{
+													leftSpeed = .15;
+													rightSpeed = 0;
+												}
+
+												else
+												{
+													leftSpeed = 0;
+												rightSpeed = 0;}
 							}
 
-				/*if (targetHeading > currentHeading + 2)
-				{
-					rightSpeed = .3;
-				}
-
-				else if (targetHeading > currentHeading + 1)
-				{
-					rightSpeed = .15;
-				}
-				else
-				{
-					rightSpeed = 0;
-				}
-
-				if (targetHeading < currentHeading - 2)
-				{
-					leftSpeed = .3;
-				}
-
-				else if (targetHeading < currentHeading - 1)
-				{
-					leftSpeed = .15;
-				}
-
-				else
-				{
-					leftSpeed = 0;
-				}*/
+							else
+							{
+								rightSpeed = 0;
+								leftSpeed = 0;
+							}
 
 
 				rightWheel.Set( Field[robotCurrentY][robotCurrentX].GetSpeed() - .3 + rightSpeed);
-				leftWheel.Set( - ((Field[robotCurrentY][robotCurrentX].GetSpeed())-.3 + leftSpeed));
+				leftWheel.Set( - (Field[robotCurrentY][robotCurrentX].GetSpeed() - .3 + leftSpeed) );
 				currentDistance = leftEncoder.GetDistance();
 				SmartDashboard::PutNumber( "TargetHeading",Field[robotCurrentY][robotCurrentX].GetAngleDifference(Field[targetROW][targetCOL]));
 				SmartDashboard::PutNumber("EncoderDistance" , leftEncoder.GetDistance());
 				SmartDashboard::PutNumber("EncoderTarget" , targetDistance);
+
 			}
 			rightWheel.Set(0);
 			leftWheel.Set(0);
@@ -193,34 +317,7 @@ public:
 
 				currentHeading = driveGyro->GetAngle() + robotBaseHeading;
 
-				/*if (targetHeading > currentHeading + 2)
-								{
-									leftSpeed = .3;
-								}
 
-								else if (targetHeading > currentHeading + 1)
-								{
-									leftSpeed = .15;
-								}
-								else
-								{
-									leftSpeed = 0;
-								}
-
-								if (targetHeading < currentHeading - 2)
-								{
-									rightSpeed = .3;
-								}
-
-								else if (targetHeading < currentHeading - 1)
-								{
-									rightSpeed = .15;
-								}
-
-								else
-								{
-									rightSpeed = 0;
-								}*/
 											int z = currentHeading - 225;
 											int m = 450 + z;
 											bool max = 0;
@@ -237,13 +334,37 @@ public:
 														max=1;
 													}
 											if (max == 1)
-											{
-												rightSpeed = (targetHeading - currentHeading) * .1;
-											}
-											else if (max == 0)
-											{
-												leftSpeed = (currentHeading - targetHeading) * .1;
-											}
+																	{
+																		rightSpeed = 0;
+																		leftSpeed = .3;
+																	}
+																	else if (max == 0)
+																	{
+
+
+																		if (targetHeading <  currentHeading - 2)
+																						{
+																							leftSpeed = 0;
+																							rightSpeed = .3;
+																						}
+
+																						else if (targetHeading < currentHeading - 1)
+																						{
+																							leftSpeed = 0;
+																							rightSpeed = .15;
+																						}
+
+																						else
+																						{
+																							leftSpeed = 0;
+																						rightSpeed = 0;}
+																	}
+
+																	else
+																	{
+																		rightSpeed = 0;
+																		leftSpeed = 0;
+																	}
 
 							rightWheel.Set( -  (Field[robotCurrentY][robotCurrentX].GetSpeed() - .35 + rightSpeed));
 							leftWheel.Set(  (Field[robotCurrentY][robotCurrentX].GetSpeed()) - .35 + leftSpeed);
@@ -263,7 +384,10 @@ public:
 
 
 
+
 		}
+
+
 
 		void advancedTurn (int targetROW , int targetCOL)
 		{
@@ -434,6 +558,7 @@ public:
 
 
 		 	 	 mainJoystick(0),
+				 servoJoystick(1),
 
 
 				 leftWheel(0),
@@ -442,6 +567,9 @@ public:
 				 rightShoot(3),
 				 armLift(4),
 				 kicker(5),
+
+				 xServo(6),
+				 yServo(7),
 
 
 
@@ -459,8 +587,23 @@ public:
 
 		driveGyro = new AHRS(SPI::Port::kMXP);
 
-				//frame = imaqCreateImage(IMAQ_IMAGE_RGB, 0);
-				//camera.reset(new AxisCamera("axis-camera.local"));
+		//CameraServer::GetInstance()->SetQuality(50);
+		//CameraServer::GetInstance()->StartAutomaticCapture("cam0");
+
+				frame = imaqCreateImage(IMAQ_IMAGE_RGB, 0);
+				camera.reset(new AxisCamera("axis-camera"));
+
+
+
+
+				imaqError = IMAQdxOpenCamera("cam0", IMAQdxCameraControlModeController, &USB);
+						if(imaqError != IMAQdxErrorSuccess) {
+							DriverStation::ReportError("IMAQdxOpenCamera error: " + std::to_string((long)imaqError) + "\n");
+						}
+						imaqError = IMAQdxConfigureGrab(USB);
+						if(imaqError != IMAQdxErrorSuccess) {
+							DriverStation::ReportError("IMAQdxConfigureGrab error: " + std::to_string((long)imaqError) + "\n");
+						}
 
 
 
@@ -492,11 +635,14 @@ public:
 				 areObjects = false;
 
 				 robotCurrentX = 5;
-				 robotCurrentY = 5;
+				 robotCurrentY = 1;
 
 				 TestY = 1;
 				 TestX = 1;
 				 robotBaseHeading = 90;
+
+				 yServoPos = 45;
+				 xServoPos = 90;
 
 
 
@@ -524,19 +670,53 @@ public:
 
 	void TeleopInit()
 		{
-						for (int tempY = 0; tempY <= 10 ; tempY++)
+						for (int tempY = 0; tempY <= 20 ; tempY++)
 						 {
-							 for (int tempX = 0; tempX <= 10; tempX++)
+							 for (int tempX = 0; tempX <= 20; tempX++)
 							 {
-								 Field[tempY][tempX] = FPS(tempY , tempX , .55);
+								 Field[tempY][tempX] = FPS(tempY , tempX , .55, 20 , 20);
 						}
 						 }
+
+						/*xServo.Set(0);
+						yServo.Set(0);
+						Wait(5);
+						xServo.Set(180);
+						yServo.Set(180);
+						Wait(5);
+						xServo.Set(90);
+						yServo.Set(90);*/
 
 
 		}
 
 	void TeleopPeriodic()
 		{
+		IMAQdxStartAcquisition(USB);
+
+
+
+		if ( !servoJoystick.GetRawButton(4))
+		{
+			IMAQdxGrab(USB, frame, true, NULL);
+						if(imaqError != IMAQdxErrorSuccess) {
+							DriverStation::ReportError("IMAQdxGrab error: " + std::to_string((long)imaqError) + "\n");
+						} else {
+
+							CameraServer::GetInstance()->SetImage(frame);
+						}
+		}
+		else
+		{
+			camera->GetImage(frame);
+			CameraServer::GetInstance()->SetImage(frame);
+		}
+
+		servoSet();
+		if (servoJoystick.GetRawButton(1))
+		{
+			simpleScan();
+		}
 
 		SmartDashboard::PutNumber("Encoder Pulses", leftEncoder.GetDistance());
 
@@ -616,7 +796,7 @@ public:
 										//Stop();
 									}
 
-						if(mainJoystick.GetRawButton(B_BUTTON) == true)
+						if(mainJoystick.GetRawButton(6) == true)
 									{
 										kicker.Set(1);
 										Wait(0.1);
@@ -643,6 +823,9 @@ public:
 						}
 						// wait for a motor update time
 						Wait(0.005);
+						SmartDashboard::PutNumber("testYAccell" , driveGyro->GetWorldLinearAccelY());
+
+						SmartDashboard::PutNumber("testXAccell" , driveGyro->GetWorldLinearAccelX());
 
 
 		}
@@ -651,6 +834,8 @@ public:
 
 	void TestPeriodic()
 		{
+
+
 
 		}
 

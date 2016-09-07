@@ -1,4 +1,6 @@
 #include "math.h"
+#include "Barrier.cpp"
+
 
 //X = ROW
 //Y = COL
@@ -10,17 +12,27 @@ public:
 	int ROW;
 	int COL;
 	double SPEED;
+	int XLimit;
+	int YLimit;
+
+	Barrier barrier;
+
 FPS()
 	{
 	ROW = 1;
 	COL = 1;
 	SPEED = .5;
+	barrier = Barrier(0,0,0,0,0);
+	XLimit = 0;
+	YLimit = 0;
 	}
-FPS(int Row, int Col, double Speed)
+FPS(int Row, int Col, double Speed, int X, int Y)
 		{
 	ROW = Row;
 	COL = Col;
 	SPEED = Speed;
+	XLimit = X;
+	YLimit = Y;
 		}
 double GetSpeed()
 {
@@ -150,14 +162,37 @@ double GetDistance(FPS temp)
 
 }
 
-int TestA()
+void CreateBarrier(int Y_S,int Y_E,int X_S,int X_E)
 {
-	return 34;
+	barrier = Barrier(Y_S,Y_E,X_S,X_E,SPEED);
 }
 
-double TestB()
+bool CheckSpot()
 {
-	return 35.78;
+	if (barrier.GetXStart() > 0 && barrier.GetYStart() > 0)
+	{
+		return true;
+	}
+	return false;
+
 }
+
+
+int BarrierAvoid(FPS EndPostion)
+{
+	int x1 = ROW;
+	int y1 = COL;
+	int x2 = EndPostion.GetRow();
+	int y2 = EndPostion.GetCol();
+
+if ( x1 > x2 && y1 > y2)
+{
+	return 0;
+}
+
+return 0;
+
+}
+
 
 };

@@ -127,6 +127,10 @@ class CameraTech
 
 				return  targetWidth/(normalizedWidth*12*tan(VIEW_ANGLE*M_PI/(180*2)));
 			}
+			void LineDetect (IMAQdxSession Cam , Image*frame)
+			{
+
+			}
 
 			void ColorPickUp(IMAQdxSession Cam , Image*frame , float AreaMin , Range Hue, Range Sat, Range Val)
 			{

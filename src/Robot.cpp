@@ -2,6 +2,7 @@
 #include "AHRS.h"
 #include "Math.h"
 #include "FPS.cpp"
+#include "CameraTech.cpp"
 
 
 #define A_BUTTON(TEST) 1
@@ -46,6 +47,7 @@ public:
 		int xServoPos;
 
 		FPS Field[21][21];
+		CameraTech CT;
 
 
 
@@ -711,7 +713,16 @@ public:
 			camera->GetImage(frame);
 			CameraServer::GetInstance()->SetImage(frame);
 		}
+		if(servoJoystick.GetRawButton(2))
+				{
+					CT.ColorPickUp(USB, frame, 20, {350,10},{100,255},{100,255});//Red
+					//CT.ColorPickUp(USB, frame, 20, {110,130},{50,255},{50,255});//Green
+				}
+		else if(servoJoystick.GetRawButton(3))
+		{
+			CT.ColorPickUp(USB, frame, 20, {220,260},{0,255},{0,255});//Blue
 
+		}
 		servoSet();
 		if (servoJoystick.GetRawButton(1))
 		{

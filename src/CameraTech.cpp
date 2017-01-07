@@ -50,14 +50,7 @@ class CameraTech
 		}
 
 
-		void SendToDashboard(Image *image, int error)
-			{
-				if(error < ERR_SUCCESS) {
-					//DriverStation::ReportError("Send To Dashboard error: " + std::to_string((long)imaqError) + "\n");
-				} else {
-					CameraServer::GetInstance()->SetImage(image);
-				}
-			}
+
 
 			//Comparator function for sorting particles. Returns true if particle 1 is larger
 			static bool CompareParticleSizes(ParticleReport particle1, ParticleReport particle2)
@@ -127,10 +120,28 @@ class CameraTech
 
 				return  targetWidth/(normalizedWidth*12*tan(VIEW_ANGLE*M_PI/(180*2)));
 			}
-			void LineDetect (IMAQdxSession Cam , Image*frame)
-			{
 
-			}
+			void SendToDashboard(Image *image, int error)
+									{
+										if(error < ERR_SUCCESS) {
+											//DriverStation::ReportError("Send To Dashboard error: " + std::to_string((long)imaqError) + "\n");
+										} else {
+											CameraServer::GetInstance()->SetImage(image);
+										}
+									}
+public:
+
+			CameraTech()
+	{
+
+	}
+			/* void LineDetect (IMAQdxSession Cam , Image*frame)
+			{
+				 Point point = {1,1};
+				 PixelValu PixelValue
+				 int test;
+				 test = imaqGetPixel(frame,point,Pixelvalue);
+			}*/
 
 			void ColorPickUp(IMAQdxSession Cam , Image*frame , float AreaMin , Range Hue, Range Sat, Range Val)
 			{
@@ -144,8 +155,8 @@ class CameraTech
 							imaqError = imaqColorThreshold(binaryFrame, frame, 255, IMAQ_HSV, &Hue_Range, &Sat_Range, &Val_Range);
 
 							//Set numParticles
-							int numParticles = 0;
-							imaqError = imaqCountParticles(binaryFrame, 1, &numParticles);
+						//	int numParticles = 0;
+							//imaqError = imaqCountParticles(binaryFrame, 1, &numParticles);
 
 
 							//Send masked image to dashboard to assist in tweaking mask.
@@ -154,52 +165,15 @@ class CameraTech
 
 							//filter out small particles
 							//float areaMin = SmartDashboard::GetNumber("Area min %", AREA_MINIMUM);
-							float areaMin = AreaMin;
+							/*float areaMin = AreaMin;
 							criteria[0] = {IMAQ_MT_AREA_BY_IMAGE_AREA, areaMin, 100, false, false};
 							imaqError = imaqParticleFilter4(binaryFrame, binaryFrame, criteria, 1, &filterOptions, NULL, NULL);
 
 
-							imaqError = imaqCountParticles(binaryFrame, 1, &numParticles);
+							imaqError = imaqCountParticles(binaryFrame, 1, &numParticles);*/
 
 
-							/*if(numParticles > 0)
-							{
-								//Measure particles and sort by particle size
-								std::vector<ParticleReport> particles;
-								for(int particleIndex = 0; particleIndex < numParticles; particleIndex++)
-								{
-									ParticleReport par;
-									imaqMeasureParticle(binaryFrame, particleIndex, 0, IMAQ_MT_AREA_BY_IMAGE_AREA, &(par.PercentAreaToImageArea));
-									imaqMeasureParticle(binaryFrame, particleIndex, 0, IMAQ_MT_AREA, &(par.Area));
-									imaqMeasureParticle(binaryFrame, particleIndex, 0, IMAQ_MT_CONVEX_HULL_AREA, &(par.ConvexHullArea));
-									imaqMeasureParticle(binaryFrame, particleIndex, 0, IMAQ_MT_BOUNDING_RECT_TOP, &(par.BoundingRectTop));
-									imaqMeasureParticle(binaryFrame, particleIndex, 0, IMAQ_MT_BOUNDING_RECT_LEFT, &(par.BoundingRectLeft));
-									imaqMeasureParticle(binaryFrame, particleIndex, 0, IMAQ_MT_BOUNDING_RECT_BOTTOM, &(par.BoundingRectBottom));
-									imaqMeasureParticle(binaryFrame, particleIndex, 0, IMAQ_MT_BOUNDING_RECT_RIGHT, &(par.BoundingRectRight));
-									particles.push_back(par);
-								}
-								sort(particles.begin(), particles.end(), CompareParticleSizes);
 
-								//This example only scores the largest particle. Extending to score all particles and choosing the desired one is left as an exercise
-								//for the reader. Note that the long and short side scores expect a single tote and will not work for a stack of 2 or more totes.
-								//Modification of the code to accommodate 2 or more stacked totes is left as an exercise for the reader.
-								scores.Trapezoid = TrapezoidScore(particles.at(0));
-								SmartDashboard::PutNumber("Trapezoid", scores.Trapezoid);
-								scores.LongAspect = LongSideScore(particles.at(0));
-								SmartDashboard::PutNumber("Long Aspect", scores.LongAspect);
-								scores.ShortAspect = ShortSideScore(particles.at(0));
-								SmartDashboard::PutNumber("Short Aspect", scores.ShortAspect);
-								scores.AreaToConvexHullArea = ConvexHullAreaScore(particles.at(0));
-								SmartDashboard::PutNumber("Convex Hull Area", scores.AreaToConvexHullArea);
-								bool isTote = scores.Trapezoid > SCORE_MIN && (scores.LongAspect > SCORE_MIN || scores.ShortAspect > SCORE_MIN) && scores.AreaToConvexHullArea > SCORE_MIN;
-								bool isLong = scores.LongAspect > scores.ShortAspect;
-
-								//Send distance and tote status to dashboard. The bounding rect, particularly the horizontal center (left - right) may be useful for rotating/driving towards a tote
-								SmartDashboard::PutBoolean("IsTote", isTote);
-								SmartDashboard::PutNumber("Distance", computeDistance(binaryFrame, particles.at(0), isLong));
-							} else {
-								SmartDashboard::PutBoolean("IsTote", false);
-							}*/
 
 							Wait(0.005);				// wait for a motor update time
 						}
